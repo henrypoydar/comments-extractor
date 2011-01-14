@@ -32,7 +32,6 @@ class CommentExtractor
     Dir.glob("#{@path}/**/*.{#{@extensions.join(',')}}").each do |f| 
       ext = File.extname(f).gsub('.', '')
       @stats[@stats.index {|x| x[:extension] == ext}][:files] += 1
-      body = File.open(f).read
       regex = case ext
               when 'html','erb'; /\<!\s*--(.*?)(--\s*\>)/m
               when 'js','css','scss'; /\/\*(.*?)\*\//m
@@ -41,7 +40,7 @@ class CommentExtractor
               else; nil
               end
       next if regex.nil?
-      res = body.match(regex).to_a
+      res = File.open(f).read.match(regex).to_a
       @stats[@stats.index {|x| x[:extension] == ext}][:comments] += res.size 
       res.each do |comment|
         comment_hash = {:file => f, :comment => comment}
@@ -103,6 +102,4 @@ def run
 end
 
 run if __FILE__ == $PROGRAM_NAME
-
-
 
